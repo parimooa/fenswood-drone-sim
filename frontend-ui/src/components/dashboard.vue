@@ -52,16 +52,16 @@
               <v-divider></v-divider>
               <v-card-subtitle>This will start mission</v-card-subtitle>
               <v-divider></v-divider>
-              <v-card-text class="text-center">
+              <v-card-text class="bg-grey-lighten-1 text-center">
                 <v-btn
                   fab
                   icon
-                  size="x-large"
+                  size="8em"
                   color="success"
                   @click="sendMissionStart"
-                  :disabled="!vehicleState.connected"
+                  :disabled="!vehicleState.connected || vehicleState.armed"
                 >
-                  <v-icon left>mdi-play</v-icon>
+                  <v-icon size="80px">mdi-play</v-icon>
                 </v-btn>
               </v-card-text>
             </v-card>
@@ -80,13 +80,16 @@
               <v-card-subtitle>This will abort mission</v-card-subtitle>
               <v-divider></v-divider>
 
-              <v-card-text class="text-center">
-                <v-icon
+              <v-card-text class="bg-grey-lighten-1 text-center">
+                <v-btn
+                  fab
+                  icon
+                  size="8em"
                   color="red"
-                  icon="mdi-close-octagon"
-                  size="100"
                   @click="sendMissionAbort"
-                ></v-icon>
+                  :disabled="!vehicleState.armed"
+                  ><v-icon size="80px">mdi-close-octagon</v-icon></v-btn
+                >
               </v-card-text>
             </v-card>
           </v-col>
@@ -220,9 +223,6 @@
               <v-divider></v-divider>
               <v-card-text class="text-center">
                 {{ gps_position.longitude }}, {{ gps_position.latitude }}
-
-                <!--                <v-img :src="raw_image" max-width="900"-->
-                <!--                       max-height="500"></v-img>-->
               </v-card-text>
 
               <fenswoodMap ref="droneMap"></fenswoodMap>
@@ -254,6 +254,7 @@ export default {
   data() {
     return {
       switchCameraFeed: false,
+      startMission: false,
       drawer: null,
       items: [
         { title: "Dashboard", icon: "mdi-view-dashboard", route: "fenswood" },
@@ -323,6 +324,7 @@ export default {
   watch: {
     switchCameraFeed(value) {
       console.log("switchCameraFeed " + this.switchCameraFeed);
+
       if (value === "ON") {
         this.getRawImage();
       } else {
@@ -342,8 +344,6 @@ export default {
 
     "gps_position.header.stamp.sec": {
       handler: function (after, before) {
-        // console.log("new" + JSON.stringify(after))
-        // console.log("old" + JSON.stringify(before))
         let coordinate = [
           this.gps_position.longitude,
           this.gps_position.latitude,
@@ -355,8 +355,6 @@ export default {
 
     gps_position: {
       handler: function (after) {
-        // console.log("new latitude" + JSON.stringify(after))
-        // console.log("old latitude" + JSON.stringify(before))
         let coordinate = [after.longitude, after.latitude];
         this.$refs.droneMap.updatedFlightPath(coordinate);
       },
@@ -497,58 +495,6 @@ export default {
     this.connectRosbridge();
     this.getVehicleState();
     this.getGPS();
-
-    // setTimeout(() => {
-    //   this.coordinates.forEach((coordinate, i) => {
-    //     setTimeout(() => {
-    //       this.$refs.droneMap.updatedFlightPath(coordinate)
-    //     }, i * 1000);
-    //   })
-    // },1000);
-    // this.iconFeature = new Feature({
-    //   geometry: new Point(transform([-2.6716709, 51.4233628], 'EPSG:4326', 'EPSG:3857')),
-    //   name: 'Somewhere near Bristol',
-    // });
-    // this.map = new Map({
-    //   // the map will be created using the 'map-root' ref
-    //   target: 'map',
-    //   layers: [
-    //     // adding a background tiled layer
-    //     new TileLayer({
-    //       source: new OSM(), // tiles are served by OpenStreetMap
-    //       name: 'OpenStreetMap',
-    //       isBaseMap: true
-    //     }),
-    //     new layerVector({
-    //       source: new sourceVector({
-    //         features: [new Feature({
-    //           geometry: new Point(transform([-2.6716709, 51.4233628], 'EPSG:4326', 'EPSG:3857'))
-    //         }), new Feature({
-    //           geometry: new Point(transform([-2.671648, 51.423317], 'EPSG:4326', 'EPSG:3857'))
-    //         })]
-    //       }),
-    //       style: new Style({
-    //         image: new Icon({
-    //           src: 'quadcopter.png',
-    //           anchor: [0.9, 0.2],
-    //           anchorXUnits: 'fraction',
-    //           anchorYUnits: 'fraction',
-    //           opacity: 0.75,
-    //           scale: 0.2,
-    //           color: "red"
-    //         })
-    //       })
-    //     })
-    //
-    //   ],
-    //
-    //   // the map view will initially show the whole world
-    //   view: new View({
-    //     zoom: 19,
-    //     center: transform([-2.6716709, 51.4233628], 'EPSG:4326', 'EPSG:3857'),
-    //     constrainResolution: true
-    //   }),
-    // })
   },
 };
 </script>
